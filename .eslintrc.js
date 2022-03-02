@@ -15,6 +15,10 @@ module.exports = {
     // 'plugin:unicorn/recommended',
     'plugin:promise/recommended',
     'plugin:@typescript-eslint/recommended',
+    'prettier',
+    'prettier/@typescript-eslint',
+    'prettier/react',
+    'prettier/unicorn',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {

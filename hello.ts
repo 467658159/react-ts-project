@@ -1,4 +1,4 @@
-const add = (a, b) => {
+const add = (a: number, b: string) => {
   console.log(a + b)
   return a + b
 }
