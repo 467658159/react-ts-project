@@ -34,6 +34,7 @@ module.exports = {
         extensions: ['.tsx', '.ts', '.js', '.json'],
       },
     },
+    typescript: {},
   },
   plugins: ['react', 'unicorn', 'promise', '@typescript-eslint'],
   rules: {

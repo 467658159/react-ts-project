@@ -1,14 +1,55 @@
 const { resolve } = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
 const { isDev, PROJECT_PATH } = require('../constants')
+const WebpackBar = require('webpackbar')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+
+const getCssLoaders = (importLoaders) => [
+  'style-loader',
+  {
+    loader: 'css-loader',
+    options: {
+      modules: false,
+      sourceMap: isDev,
+      importLoaders,
+    },
+  },
+  {
+    loader: 'postcss-loader',
+    options: {
+      ident: 'postcss',
+      plugins: [
+        // 修复一些和 flex 布局相关的 bug
+        require('postcss-flexbugs-fixes'),
+        require('postcss-preset-env')({
+          autoprefixer: {
+            grid: true,
+            flexbox: 'no-2009',
+          },
+          stage: 3,
+        }),
+        require('postcss-normalize'),
+      ],
+      sourceMap: isDev,
+    },
+  },
+]
 
 module.exports = {
   entry: {
-    app: resolve(PROJECT_PATH, './src/app.js'),
+    app: resolve(PROJECT_PATH, './src/index.tsx'),
   },
   output: {
     filename: `js/[name]${isDev ? '' : '.[hash:8]'}.js`,
     path: resolve(PROJECT_PATH, './dist'),
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js', '.json'],
+    alias: {
+      Src: resolve(PROJECT_PATH, './src'),
+      Components: resolve(PROJECT_PATH, './src/components'),
+      Utils: resolve(PROJECT_PATH, './src/utils'),
+    },
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -32,5 +73,65 @@ module.exports = {
             useShortDoctype: true,
           },
     }),
+    new WebpackBar({
+      name: isDev ? '正在启动' : '正在打包',
+      color: '#069',
+    }),
+    new ForkTsCheckerWebpackPlugin({
+      typescript: {
+        configFile: resolve(PROJECT_PATH, './tsconfig.json'),
+      },
+    }),
   ],
+  module: {
+    rules: [
+      {
+        test: /\.(tsx?|js)$/,
+        loader: 'babel-loader',
+        options: { cacheDirectory: true },
+        exclude: /node_modules/,
+      },
+      {
+        test: /\.css$/,
+        use: getCssLoaders(1),
+      },
+      {
+        test: /\.less$/,
+        use: [
+          ...getCssLoaders(2),
+          {
+            loader: 'less-loader',
+            options: {
+              sourceMap: isDev,
+            },
+          },
+        ],
+      },
+      {
+        test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              limit: 10 * 1024,
+              name: '[name].[contenthash:8].[ext]',
+              outputPath: 'assets/images',
+            },
+          },
+        ],
+      },
+      {
+        test: /\.(ttf|woff|woff2|eot|otf)$/,
+        use: [
+          {
+            loader: 'url-loader',
+            options: {
+              name: '[name].[contenthash:8].[ext]',
+              outputPath: 'assets/fonts',
+            },
+          },
+        ],
+      },
+    ],
+  },
 }
