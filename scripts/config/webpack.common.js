@@ -3,9 +3,10 @@ const { isDev, PROJECT_PATH } = require('../constants')
 const WebpackBar = require('webpackbar')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const getCssLoaders = (importLoaders) => [
-  'style-loader',
+  isDev ? 'style-loader' : MiniCssExtractPlugin.loader,
   {
     loader: 'css-loader',
     options: {
@@ -17,27 +18,28 @@ const getCssLoaders = (importLoaders) => [
   {
     loader: 'postcss-loader',
     options: {
-      ident: 'postcss',
-      plugins: [
-        // 修复一些和 flex 布局相关的 bug
-        require('postcss-flexbugs-fixes'),
-        require('postcss-preset-env')({
-          autoprefixer: {
-            grid: true,
-            flexbox: 'no-2009',
-          },
-          stage: 3,
-        }),
-        require('postcss-normalize'),
-      ],
-      sourceMap: isDev,
+      postcssOptions: {
+        plugins: [
+          require('postcss-flexbugs-fixes'),
+          !isDev && [
+            'postcss-preset-env',
+            {
+              autoprefixer: {
+                grid: true,
+                flexbox: 'no-2009',
+              },
+              stage: 3,
+            },
+          ],
+        ].filter(Boolean),
+      },
     },
   },
 ]
 
 module.exports = {
   entry: {
-    app: resolve(PROJECT_PATH, './src/index.tsx'),
+    app: resolve(PROJECT_PATH, './src/main.tsx'),
   },
   output: {
     filename: `js/[name]${isDev ? '' : '.[hash:8]'}.js`,
