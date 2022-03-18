@@ -17,4 +17,8 @@ export const routes: IRoute[] = [
       },
     ],
   },
+  {
+    path: '/',
+    redirect: '/dashboard',
+  },
 ]
